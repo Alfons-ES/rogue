@@ -1,5 +1,5 @@
 import * as ROT from 'rot-js';
-import { Actor, Entity } from './entity';
+import { Actor, Entity, RenderOrder } from './entity';
 import type { Tile } from './tile-types';
 import { WALL_TILE } from './tile-types';
 import { Display } from 'rot-js';
@@ -103,9 +103,13 @@ export class GameMap {
                 this.display.draw(x, y, char, fg, bg);
             }
         }
-        this.entities.forEach((e) => {
+        const sortedEntities = this.entities
+            .slice()
+            .sort((a, b) => a.renderOrder - b.renderOrder);
+
+        sortedEntities.forEach((e) => {
             if (this.tiles[e.y][e.x].visible) {
-                this.display.draw(e.x, e.y, e.char, e.bg, e.fg);
+                this.display.draw(e.x, e.y, e.char, e.fg, e.bg);
             }
         });
     }

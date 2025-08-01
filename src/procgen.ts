@@ -168,7 +168,7 @@ function placeEntities(
         const x = generateRandomNumber(bounds.x1 + 1, bounds.x2 - 1);
         const y = generateRandomNumber(bounds.y1 + 1, bounds.y2 - 1); //pick the x and y coordinates for the monster
         if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-            if (Math.random() < 0.5) {
+            if (Math.random() < 0.6) {
                 dungeon.entities.push(spawnOrc(x, y));
             } else {
                 dungeon.entities.push(spawnTroll(x, y));

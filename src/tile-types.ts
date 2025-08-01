@@ -27,6 +27,6 @@ export const WALL_TILE: Tile = {
     transparent: false,
     visible: false,
     seen: false,
-    dark: { char: '🌲', fg: '#fff', bg: '#000064' },
-    light: { char: '🌲', fg: '#fff', bg: '#826e32' },
+    dark: { char: ' ', fg: '#fff', bg: '#000064' },
+    light: { char: ' ', fg: '#fff', bg: '#826e32' },
 };
