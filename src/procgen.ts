@@ -108,9 +108,7 @@ export function generateDungeon(
 
         const newRoom = new RectangularRoom(x, y, width, height);
 
-        // Optional: allow some overlap to keep density high
-        // Comment out the intersects check if you want max density
-        // if (rooms.some((r) => r.intersects(newRoom))) continue;
+        if (rooms.some((r) => r.intersects(newRoom))) continue;
 
         dungeon.addRoom(x, y, newRoom.tiles);
         placeEntities(newRoom, dungeon, maxMonsters);
