@@ -65,6 +65,7 @@ export function generateDungeon(
     maxRooms: number,
     minSize: number,
     maxSize: number,
+    maxSpread: number,
     maxMonsters: number,
     player: Entity,
     display: Display,
@@ -77,21 +78,44 @@ export function generateDungeon(
         const width = generateRandomNumber(minSize, maxSize);
         const height = generateRandomNumber(minSize, maxSize);
 
-        const x = generateRandomNumber(0, mapWidth - width - 1);
-        const y = generateRandomNumber(0, mapHeight - height - 1);
+        let x = 0;
+        let y = 0;
+
+        if (rooms.length === 0) {
+            // First room is placed randomly
+            x = generateRandomNumber(0, mapWidth - width - 1);
+            y = generateRandomNumber(0, mapHeight - height - 1);
+        } else {
+            const lastRoom = rooms[rooms.length - 1];
+            const [lastX, lastY] = lastRoom.center;
+
+            // Random direction: N, S, E, W
+            const directions: [number, number][] = [
+                [0, -1], // North
+                [0, 1],  // South
+                [1, 0],  // East
+                [-1, 0], // West
+            ];
+            const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
+
+            x = lastX + dx * (width + maxSpread);
+            y = lastY + dy * (height + maxSpread);
+
+            // Clamp to map bounds
+            x = Math.max(0, Math.min(mapWidth - width - 1, x));
+            y = Math.max(0, Math.min(mapHeight - height - 1, y));
+        }
 
         const newRoom = new RectangularRoom(x, y, width, height);
 
-        if (rooms.some((r) => r.intersects(newRoom))) {
-            continue;
-        }
+        // Optional: allow some overlap to keep density high
+        // Comment out the intersects check if you want max density
+        // if (rooms.some((r) => r.intersects(newRoom))) continue;
 
         dungeon.addRoom(x, y, newRoom.tiles);
-
         placeEntities(newRoom, dungeon, maxMonsters);
-
-        rooms.push(newRoom); // Add the new room to the list of rooms
-    } 
+        rooms.push(newRoom);
+    }
 
     const startPoint = rooms[0].center;
     player.x = startPoint[0];

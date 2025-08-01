@@ -6,13 +6,14 @@ import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
 
 export class Engine {
-public static readonly WIDTH = 100;
-public static readonly HEIGHT = 50;
-public static readonly MAP_WIDTH = 100;
-public static readonly MAP_HEIGHT = 45;
-public static readonly MIN_ROOM_SIZE = 8;
-public static readonly MAX_ROOM_SIZE = 15;
-public static readonly MAX_ROOMS = 30;
+    public static readonly WIDTH = 100;
+    public static readonly HEIGHT = 50;
+    public static readonly MAP_WIDTH = 100;
+    public static readonly MAP_HEIGHT = 45;
+    public static readonly MIN_ROOM_SIZE = 8;
+    public static readonly MAX_ROOM_SIZE = 15;
+    public static readonly MAX_ROOMS = 30;
+    public static readonly MAX_ROOM_SPREAD = 5;
 
 public static readonly MAX_MONSTERS_PER_ROOM = 2;
 
@@ -36,6 +37,7 @@ public static readonly MAX_MONSTERS_PER_ROOM = 2;
           Engine.MAX_ROOMS,
           Engine.MIN_ROOM_SIZE,
           Engine.MAX_ROOM_SIZE,
+          Engine.MAX_ROOM_SPREAD,
           Engine.MAX_MONSTERS_PER_ROOM,
           player,
           this.display,
