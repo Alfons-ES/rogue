@@ -41,10 +41,10 @@ class RectangularRoom {
 
     intersects(other: RectangularRoom): boolean {
         return (
-            this.x <= other.x + other.width &&
-            this.x + this.width >= other.x &&
-            this.y <= other.y + other.height &&
-            this.y + this.width >= other.y
+            this.x <= other.x + other.width - 1 &&
+            this.x + this.width - 1 >= other.x &&
+            this.y <= other.y + other.height - 1 &&
+            this.y + this.height - 1 >= other.y
         );
     }
 
