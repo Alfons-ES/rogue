@@ -1,4 +1,4 @@
-import { Engine } from './engine';
+﻿import { Engine } from './engine';
 import { Entity, Actor } from './entity';
 import { Colors } from './colors';
 import { EngineState } from './engine';
@@ -29,16 +29,26 @@ export class BumpAction extends ActionWithDirection {
     }
 }
 
-export class MovementAction extends ActionWithDirection { 
-    perform(entity: Entity) { // Check if the entity can move in the specified direction
-        const destX = entity.x + this.dx;
-        const destY = entity.y + this.dy;
+export class MovementAction extends ActionWithDirection {
+    perform(entity: Entity) {
+        const gameMap = window.engine.gameMap;
 
-        if (!window.engine.gameMap.isInBounds(destX, destY)) return;
-        if (!window.engine.gameMap.tiles[destY][destX].walkable) return;
-        if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return; // Check if there's an entity blocking the movement
+        const targetX = entity.x + this.dx;
+        const targetY = entity.y + this.dy;
+
+        if (!gameMap.isInBounds(targetX, targetY)) return;
+        if (!gameMap.tiles[targetY][targetX].walkable) return;
+        if (gameMap.getBlockingEntityAtLocation(targetX, targetY)) return;
+
+        // Move player
         entity.move(this.dx, this.dy);
-    } 
+
+        // move camera
+        if (entity === window.engine.player) {
+            gameMap.cameraX = entity.x - Math.floor(gameMap.display.getOptions().width! / 2);
+            gameMap.cameraY = entity.y - Math.floor(gameMap.display.getOptions().height! / 2);
+        }
+    }
 }
 
 

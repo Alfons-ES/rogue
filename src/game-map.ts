@@ -7,11 +7,15 @@ import { Display } from 'rot-js';
 export class GameMap {
     tiles: Tile[][];
 
+    cameraX: number;
+    cameraY: number;
+
     constructor(
         public width: number,
         public height: number,
         public display: Display,
         public entities: Entity[],
+        public player: Entity,
     ) {
         this.tiles = new Array(this.height);
         for (let y = 0; y < this.height; y++) {
@@ -22,6 +26,8 @@ export class GameMap {
             this.tiles[y] = row;
             
         }
+        this.cameraX = this.player.x - Math.floor(this.display.getOptions().width! / 2);
+        this.cameraY = this.player.y - Math.floor(this.display.getOptions().height! / 2);
     }
 
     public get actors(): Actor[] {
@@ -100,7 +106,7 @@ export class GameMap {
                     bg = tile.dark.bg;
                 }
 
-                this.display.draw(x, y, char, fg, bg);
+                this.display.draw(x - this.cameraX, y - this.cameraY, char, fg, bg);
             }
         }
         const sortedEntities = this.entities
@@ -109,9 +115,10 @@ export class GameMap {
 
         sortedEntities.forEach((e) => {
             if (this.tiles[e.y][e.x].visible) {
-                this.display.draw(e.x, e.y, e.char, e.fg, e.bg);
+                this.display.draw(e.x - this.cameraX, e.y - this.cameraY, e.char, e.fg, e.bg);
             }
         });
+
     }
 
     

@@ -62,6 +62,9 @@ export class Engine {
             player,
             this.display,
         );
+        
+    this.gameMap.cameraX = this.player.x - Math.floor(this.display.getOptions().width! / 2);
+    this.gameMap.cameraY = this.player.y - Math.floor(this.display.getOptions().height! / 2);
 
         window.addEventListener('keydown', (event) => {
             this.update(event);
@@ -138,7 +141,7 @@ export class Engine {
 
     render() {
         this.display.clear();
-        
+        this.gameMap.render();
         renderHealthBar(
             this.display,
             this.player.fighter.hp,
@@ -146,9 +149,6 @@ export class Engine {
             20,
         );
         this.messageLog.render(this.display, 48, 47, 40, 5);
-
-
-        this.gameMap.render();
         renderNamesAtLocation(57, 2);
         if (this.state === EngineState.Log) {
             renderFrameWithTitle(3, 3, 100, 44, 'Log');
