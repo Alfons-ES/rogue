@@ -1,5 +1,6 @@
 ﻿import { BaseComponent } from './base-component';
 import { Actor, RenderOrder } from '../entity';
+import { Colors } from '../colors';
 
 export class Fighter implements BaseComponent {
     entity: Actor | null;
@@ -29,20 +30,22 @@ export class Fighter implements BaseComponent {
         if (!this.entity) return;
 
         let deathMessage = '';
+        let fg = null;
         if (window.engine.player === this.entity) {
             deathMessage = 'You died!';
+            fg = Colors.PlayerDie;
         } else {
             deathMessage = `${this.entity.name} is dead!`;
+            fg = Colors.EnemyDie;
         }
 
         this.entity.char = '🪦';
-        this.entity.fg = 'black';
-        this.entity.bg = '#000000';
+        this.entity.bg = 'black';
         this.entity.blocksMovement = false;
         this.entity.ai = null;
         this.entity.name = `Remains of ${this.entity.name}`;
         this.entity.renderOrder = RenderOrder.Corpse;
 
-        console.log(deathMessage);
+        window.engine.messageLog.addMessage(deathMessage, fg);
     }
 }

@@ -52,7 +52,7 @@ export function spawnPlayer(x: number, y: number): Actor {
         'blue',
         'Player',
         null,
-        new Fighter(30, 2, 5),
+        new Fighter(100, 2, 5),
     );
 }
 

@@ -1,8 +1,15 @@
 import { Engine } from './engine';
 import { Entity, Actor } from './entity';
+import { Colors } from './colors';
+import { EngineState } from './engine';
 
 export interface Action {
     perform: (entity: Entity) => void;
+}
+export class LogAction implements Action {
+    perform(_entity: Entity) {
+        window.engine.state = EngineState.Log;
+    }
 }
 export abstract class ActionWithDirection implements Action {
     constructor(public dx: number, public dy: number) { }
@@ -47,11 +54,19 @@ export class MeleeAction extends ActionWithDirection {
         const attackDescription = `${actor.name.toUpperCase()} attacks ${target.name
             }`;
 
+        const fg =
+            actor.name === 'Player' ? Colors.PlayerAttack : Colors.EnemyAttack;
         if (damage > 0) {
-            console.log(`${attackDescription} for ${damage} hit points.`);
-            target.fighter.hp -= damage; //apply damage to target
+            window.engine.messageLog.addMessage(
+                `${attackDescription} for ${damage} hit points.`,
+                fg,
+            );
+            target.fighter.hp -= damage;
         } else {
-            console.log(`${attackDescription} but does no damage.`);
+            window.engine.messageLog.addMessage(
+                `${attackDescription} but does no damage.`,
+                fg,
+            );
         }
     }
 }
@@ -75,9 +90,38 @@ const MOVE_KEYS: MovementMap = {
     d: new BumpAction(1, 0),
     z: new BumpAction(-1, 1),
     c: new BumpAction(1, 1),
-    Period: new BumpAction(0, 0), // Wait action
+    '.': new WaitAction(), 
+    v: new LogAction(),
 };
 
-export function handleInput(event: KeyboardEvent): Action {
+export function handleGameInput(event: KeyboardEvent): Action {
     return MOVE_KEYS[event.key];
 }
+export function handleLogInput(event: KeyboardEvent): number {
+    if (event.key === 'Home') {
+        window.engine.logCursorPosition = 0;
+        return 0;
+    }
+    if (event.key === 'End') {
+        window.engine.logCursorPosition =
+            window.engine.messageLog.messages.length - 1;
+        return 0;
+    }
+
+    const scrollAmount = LOG_KEYS[event.key];
+
+    if (!scrollAmount) {
+        window.engine.state = EngineState.Game;
+        return 0;
+    }
+    return scrollAmount;
+}
+interface LogMap {
+    [key: string]: number;
+}
+const LOG_KEYS: LogMap = {
+    ArrowUp: -1,
+    ArrowDown: 1,
+    PageDown: 10,
+    PageUp: -10,
+};
