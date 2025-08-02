@@ -14,10 +14,10 @@ import { MessageLog } from './message-log';
 import { Colors } from './colors';
 
 export class Engine {
-    public static readonly WIDTH = 80;
-    public static readonly HEIGHT = 50;
-    public static readonly MAP_WIDTH = 80;
-    public static readonly MAP_HEIGHT = 43;
+    public static readonly WIDTH = 114;
+    public static readonly HEIGHT = 54;
+    public static readonly MAP_WIDTH = 100;
+    public static readonly MAP_HEIGHT = 48;
     public static readonly MIN_ROOM_SIZE = 6;
     public static readonly MAX_ROOM_SIZE = 10;
     public static readonly MAX_ROOMS = 30;
@@ -38,7 +38,9 @@ export class Engine {
             width: Engine.WIDTH,
             height: Engine.HEIGHT,
             forceSquareRatio: true,
-            fontSize: 48,
+            fontSize: 42,
+            spacing: 0.9,
+            fontFamily: 'Libertinus Sans'
         });
         this.mousePosition = [0, 0];
         const container = this.display.getContainer()!;
@@ -136,25 +138,26 @@ export class Engine {
 
     render() {
         this.display.clear();
-        this.messageLog.render(this.display, 21, 45, 40, 5);
+        
         renderHealthBar(
             this.display,
             this.player.fighter.hp,
             this.player.fighter.maxHp,
             20,
         );
-        renderNamesAtLocation(21, 44);
+        this.messageLog.render(this.display, 48, 47, 40, 5);
+
 
         this.gameMap.render();
-
+        renderNamesAtLocation(57, 2);
         if (this.state === EngineState.Log) {
-            renderFrameWithTitle(3, 3, 74, 38, 'Log');
+            renderFrameWithTitle(3, 3, 100, 44, 'Log');
             this.messageLog.renderMessages(
                 this.display,
                 4,
                 4,
-                72,
-                36,
+                114,
+                54,
                 this.messageLog.messages.slice(0, this.logCursorPosition + 1),
             );
         }

@@ -22,13 +22,13 @@ export function renderHealthBar( //life-bar
 ) {
     const barWidth = Math.floor((currentValue / maxValue) * totalWidth);
 
-    drawColoredBar(display, 0, 45, totalWidth, Colors.BarEmpty);
-    drawColoredBar(display, 0, 45, barWidth, Colors.BarFilled);
+    drawColoredBar(display, 0, 48, totalWidth, Colors.BarEmpty);
+    drawColoredBar(display, 0, 48, barWidth, Colors.BarFilled);
 
     const healthText = `❤️: ${currentValue}/${maxValue}`;
 
     for (let i = 0; i < healthText.length; i++) {
-        display.drawOver(i + 1, 45, healthText[i], Colors.White, null);
+        display.drawOver(i + 1, 48, healthText[i], Colors.White, null);
     }
 }
 export function renderNamesAtLocation(x: number, y: number) {
