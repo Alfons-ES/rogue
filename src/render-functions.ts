@@ -22,27 +22,40 @@ export function renderHealthBar( //life-bar
 ) {
     const barWidth = Math.floor((currentValue / maxValue) * totalWidth);
 
-    drawColoredBar(display, 0, 48, totalWidth, Colors.BarEmpty);
-    drawColoredBar(display, 0, 48, barWidth, Colors.BarFilled);
+    drawColoredBar(display, 1, 1, totalWidth, Colors.BarEmpty);
+    drawColoredBar(display, 1, 1, barWidth, Colors.BarFilled);
 
     const healthText = `❤️: ${currentValue}/${maxValue}`;
 
     for (let i = 0; i < healthText.length; i++) {
-        display.drawOver(i + 1, 48, healthText[i], Colors.White, null);
+        display.drawOver(i + 1, 1, healthText[i], Colors.White, null);
     }
 }
-export function renderNamesAtLocation(x: number, y: number) {
-    const [mouseX, mouseY] = window.engine.mousePosition;
+export function renderNamesAtLocation() {
+    const [screenX, screenY] = window.engine.mousePosition;
+    const worldX = screenX + window.engine.gameMap.cameraX;
+    const worldY = screenY + window.engine.gameMap.cameraY;
+
     if (
-        window.engine.gameMap.isInBounds(mouseX, mouseY) &&
-        window.engine.gameMap.tiles[mouseY][mouseX].visible
+        window.engine.gameMap.isInBounds(worldX, worldY) &&
+        window.engine.gameMap.tiles[worldY][worldX].visible
     ) {
         const names = window.engine.gameMap.entities
-            .filter((e) => e.x === mouseX && e.y === mouseY)
+            .filter((e) => e.x === worldX && e.y === worldY)
             .map((e) => e.name.charAt(0).toUpperCase() + e.name.substring(1))
             .join(', ');
 
-        window.engine.display.drawText(x, y, names);
+        if (names.length > 0) {
+            const display = window.engine.display;
+            const displayWidth = display.getOptions().width!;
+            const displayHeight = display.getOptions().height!;
+
+            // Clamp tooltip position so it stays on screen
+            const tooltipX = Math.min(screenX + 1, displayWidth - names.length);
+            const tooltipY = Math.min(screenY + 1, displayHeight - 1);
+
+            display.drawText(tooltipX, tooltipY, names);
+        }
     }
 }
 

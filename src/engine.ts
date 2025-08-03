@@ -14,8 +14,8 @@ import { MessageLog } from './message-log';
 import { Colors } from './colors';
 
 export class Engine {
-    public static readonly WIDTH = 114;
-    public static readonly HEIGHT = 54;
+    public static readonly WIDTH = 57;
+    public static readonly HEIGHT = 27;
     public static readonly MAP_WIDTH = 100;
     public static readonly MAP_HEIGHT = 48;
     public static readonly MIN_ROOM_SIZE = 6;
@@ -146,18 +146,18 @@ export class Engine {
             this.display,
             this.player.fighter.hp,
             this.player.fighter.maxHp,
-            20,
+            11,
         );
-        this.messageLog.render(this.display, 48, 47, 40, 5);
-        renderNamesAtLocation(57, 2);
+        this.messageLog.render(this.display, 24, 22, 40, 5);
+        renderNamesAtLocation();
         if (this.state === EngineState.Log) {
-            renderFrameWithTitle(3, 3, 100, 44, 'Log');
+            renderFrameWithTitle(0, 0, 57, 25, 'Log');
             this.messageLog.renderMessages(
                 this.display,
-                4,
-                4,
-                114,
-                54,
+                1,
+                1,
+                55,
+                23,
                 this.messageLog.messages.slice(0, this.logCursorPosition + 1),
             );
         }
