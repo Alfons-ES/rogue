@@ -14,8 +14,8 @@ import { MessageLog } from './message-log';
 import { Colors } from './colors';
 
 export class Engine {
-    public static readonly WIDTH = 57;
-    public static readonly HEIGHT = 27;
+    public static readonly WIDTH = 73;
+    public static readonly HEIGHT = 34;
     public static readonly MAP_WIDTH = 100;
     public static readonly MAP_HEIGHT = 48;
     public static readonly MIN_ROOM_SIZE = 6;
@@ -38,7 +38,7 @@ export class Engine {
             width: Engine.WIDTH,
             height: Engine.HEIGHT,
             forceSquareRatio: true,
-            fontSize: 42,
+            fontSize: 32,
             spacing: 0.9,
             fontFamily: 'Libertinus Sans'
         });
@@ -139,7 +139,7 @@ export class Engine {
     }
 
 
-    render() {
+    render() { //w:73 h:34
         this.display.clear();
         this.gameMap.render();
         renderHealthBar(
@@ -148,16 +148,16 @@ export class Engine {
             this.player.fighter.maxHp,
             11,
         );
-        this.messageLog.render(this.display, 24, 22, 40, 5);
+        this.messageLog.render(this.display, 43, 0, 31, 5);
         renderNamesAtLocation();
         if (this.state === EngineState.Log) {
-            renderFrameWithTitle(0, 0, 57, 25, 'Log');
+            renderFrameWithTitle(0, 0, 73, 34, 'Log');
             this.messageLog.renderMessages(
                 this.display,
                 1,
                 1,
-                55,
-                23,
+                71,
+                32,
                 this.messageLog.messages.slice(0, this.logCursorPosition + 1),
             );
         }

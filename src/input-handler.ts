@@ -68,13 +68,13 @@ export class MeleeAction extends ActionWithDirection {
             actor.name === 'Player' ? Colors.PlayerAttack : Colors.EnemyAttack;
         if (damage > 0) {
             window.engine.messageLog.addMessage(
-                `${attackDescription} for ${damage} hit points.`,
+                `${attackDescription} for ${damage} dmg.`,
                 fg,
             );
             target.fighter.hp -= damage;
         } else {
             window.engine.messageLog.addMessage(
-                `${attackDescription} but does no damage.`,
+                `${attackDescription} but does no dmg.`,
                 fg,
             );
         }
