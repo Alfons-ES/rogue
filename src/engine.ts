@@ -1,7 +1,10 @@
 ﻿
 import * as ROT from 'rot-js';
-
-import { handleGameInput, handleLogInput } from './input-handler';
+import {
+    handleGameInput,
+    handleInventoryInput,
+    handleLogInput,
+} from './input-handler';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
@@ -22,12 +25,12 @@ export class Engine {
     public static readonly MAX_ROOM_SIZE = 10;
     public static readonly MAX_ROOMS = 30;
     public static readonly MAX_MONSTERS_PER_ROOM = 2;
+    public static readonly MAX_ITEMS_PER_ROOM = 2;
 
     display: ROT.Display;
     gameMap: GameMap;
     messageLog: MessageLog;
     mousePosition: [number, number];
-
     _state: EngineState;
     logCursorPosition: number;
 
@@ -48,7 +51,7 @@ export class Engine {
 
         this.messageLog = new MessageLog();
         this.messageLog.addMessage(
-            'Hello and welcome, adventurer, to yet another dungeon!',
+            'Welcome to game!',
             Colors.WelcomeText,
         );
 
@@ -59,6 +62,7 @@ export class Engine {
             Engine.MIN_ROOM_SIZE,
             Engine.MAX_ROOM_SIZE,
             Engine.MAX_MONSTERS_PER_ROOM,
+            Engine.MAX_ITEMS_PER_ROOM,
             player,
             this.display,
         );
@@ -89,25 +93,49 @@ export class Engine {
     handleEnemyTurns() {
         this.gameMap.actors.forEach((e) => {
             if (e.isAlive) {
-                e.ai?.perform(e);
+                try {
+                    e.ai?.perform(e);
+                } catch { }
             }
         });
     }
+
+    update(event: KeyboardEvent) {
+        if (this.state === EngineState.Game) {
+            this.processGameLoop(event);
+        } else if (this.state === EngineState.Log) {
+            this.processLogLoop(event);
+        } else if (
+            this.state === EngineState.UseInventory ||
+            this.state === EngineState.DropInventory
+        ) {
+            this.processInventoryLoop(event);
+        }
+
+        this.render();
+    }
+
     processGameLoop(event: KeyboardEvent) {
         if (this.player.fighter.hp > 0) {
             const action = handleGameInput(event);
 
-            if (action) {
-                action.perform(this.player);
-
-                if (this.state === EngineState.Game) {
-                    this.handleEnemyTurns();
-                }
+            if (action) { 
+                try {
+                    action.perform(this.player);
+                    if (this.state === EngineState.Game) {
+                        this.handleEnemyTurns();
+                    }
+                } catch { }
             }
         }
 
         this.gameMap.updateFov(this.player);
     }
+    processInventoryLoop(event: KeyboardEvent) {
+        const action = handleInventoryInput(event);
+        action?.perform(this.player);
+    }
+
     processLogLoop(event: KeyboardEvent) {
         const scrollAmount = handleLogInput(event);
         if (scrollAmount < 0 && this.logCursorPosition === 0) {
@@ -128,20 +156,10 @@ export class Engine {
         }
     }
 
-    update(event: KeyboardEvent) {
-        if (this.state === EngineState.Game) {
-            this.processGameLoop(event);
-        } else if (this.state === EngineState.Log) {
-            this.processLogLoop(event);
-        }
-
-        this.render();
-    }
-
-
     render() { //w:73 h:34
         this.display.clear();
         this.gameMap.render();
+
         renderHealthBar(
             this.display,
             this.player.fighter.hp,
@@ -149,7 +167,9 @@ export class Engine {
             11,
         );
         this.messageLog.render(this.display, 43, 0, 31, 5);
+
         renderNamesAtLocation();
+
         if (this.state === EngineState.Log) {
             renderFrameWithTitle(0, 0, 73, 34, 'Log');
             this.messageLog.renderMessages(
@@ -161,10 +181,37 @@ export class Engine {
                 this.messageLog.messages.slice(0, this.logCursorPosition + 1),
             );
         }
+        if (this.state === EngineState.UseInventory) {
+            this.renderInventory('Select an item to use');
+        }
+        if (this.state === EngineState.DropInventory) {
+            this.renderInventory('Select an item to drop');
+        }
+    }
+
+    renderInventory(title: string) {
+        const itemCount = this.player.inventory.items.length;
+        const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
+        const width = title.length + 4;
+        const x = this.player.x <= 30 ? 40 : 0;
+        const y = 0;
+
+        renderFrameWithTitle(x, y, width, height, title);
+
+        if (itemCount > 0) {
+            this.player.inventory.items.forEach((i, index) => {
+                const key = String.fromCharCode('a'.charCodeAt(0) + index);
+                this.display.drawText(x + 1, y + index + 1, `(${key}) ${i.name}`);
+            });
+        } else {
+            this.display.drawText(x + 1, y + 1, '(Empty)');
+        }
     }
 }
 export enum EngineState {
     Game,
     Dead,
     Log,
+    UseInventory,
+    DropInventory,
 }

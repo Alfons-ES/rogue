@@ -1,5 +1,5 @@
 import * as ROT from 'rot-js';
-import { Actor, Entity, RenderOrder } from './entity';
+import { Actor, Entity, Item } from './entity';
 import type { Tile } from './tile-types';
 import { WALL_TILE } from './tile-types';
 import { Display } from 'rot-js';
@@ -86,12 +86,23 @@ export class GameMap {
     getActorAtLocation(x: number, y: number): Actor | undefined {
         return this.actors.find((a) => a.x === x && a.y === y);
     }
+    public get items(): Item[] {
+        return this.entities.filter((e) => e instanceof Item).map((e) => e as Item);
+    }
+
+    removeEntity(entity: Entity) {
+        const index = this.entities.indexOf(entity);
+        if (index >= 0) {
+            this.entities.splice(index, 1);
+        }
+    }
 
     render() {
         for (let y = 0; y < this.tiles.length; y++) {
             const row = this.tiles[y];
             for (let x = 0; x < row.length; x++) {
                 const tile = row[x];
+
                 let char = ' ';
                 let fg = '#fff';
                 let bg = '#000';
@@ -119,6 +130,9 @@ export class GameMap {
             }
         });
 
+    }
+    public get gameMap(): GameMap {
+        return this;
     }
 
     
