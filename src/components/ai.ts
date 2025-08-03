@@ -2,18 +2,22 @@ import * as ROT from 'rot-js';
 
 import {
     Action,
+    BumpAction,
     MeleeAction,
     MovementAction,
     WaitAction,
-} from '../input-handler';
+} from '../actions.ts';
+import { generateRandomNumber } from '../procgen';
 import { Actor, Entity } from '../entity';
 
 export abstract class BaseAI implements Action {
     path: [number, number][];
 
-    constructor() {
+    protected constructor() {
         this.path = [];
     }
+
+    abstract perform(entity: Entity): void;
 
     perform(_entity: Entity) { }
 
@@ -70,5 +74,39 @@ export class HostileEnemy extends BaseAI {
         }
 
         return new WaitAction().perform(entity);
+    }
+}
+const directions: [number, number][] = [
+    [-1, -1], // Northwest
+    [0, -1], // North
+    [1, -1], // Northeast
+    [-1, 0], // West
+    [1, 0], // East
+    [-1, 1], // Southwest
+    [0, 1], // South
+    [1, 1], // Southeast
+];
+
+export class ConfusedEnemy extends BaseAI {
+    constructor(public previousAi: BaseAI | null, public turnsRemaining: number) {
+        super();
+    }
+
+    perform(entity: Entity) {
+        const actor = entity as Actor;
+        if (!actor) return;
+
+        if (this.turnsRemaining <= 0) {
+            window.engine.messageLog.addMessage(
+                `${entity.name} is no longer confused.`,
+            );
+            actor.ai = this.previousAi;
+        } else {
+            const [directionX, directionY] =
+                directions[generateRandomNumber(0, directions.length)];
+            this.turnsRemaining -= 1;
+            const action = new BumpAction(directionX, directionY);
+            action.perform(entity);
+        }
     }
 }

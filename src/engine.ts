@@ -1,10 +1,11 @@
 ﻿
 import * as ROT from 'rot-js';
 import {
-    handleGameInput,
-    handleInventoryInput,
-    handleLogInput,
+    BaseInputHandler,
+    GameInputHandler,
+    InputState,
 } from './input-handler';
+import { Action } from './actions';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
@@ -15,27 +16,27 @@ import {
 } from './render-functions';
 import { MessageLog } from './message-log';
 import { Colors } from './colors';
-
+import { ImpossibleException } from './exceptions';
 export class Engine {
     public static readonly WIDTH = 73;
     public static readonly HEIGHT = 34;
-    public static readonly MAP_WIDTH = 100;
-    public static readonly MAP_HEIGHT = 48;
+    public static readonly MAP_WIDTH = 200;
+    public static readonly MAP_HEIGHT = 200;
     public static readonly MIN_ROOM_SIZE = 6;
-    public static readonly MAX_ROOM_SIZE = 10;
-    public static readonly MAX_ROOMS = 30;
+    public static readonly MAX_ROOM_SIZE = 11;
+    public static readonly MAX_ROOMS = 50;
     public static readonly MAX_MONSTERS_PER_ROOM = 2;
-    public static readonly MAX_ITEMS_PER_ROOM = 2;
+    public static readonly MAX_ITEMS_PER_ROOM = 40;
 
+    inputHandler: BaseInputHandler
     display: ROT.Display;
     gameMap: GameMap;
     messageLog: MessageLog;
     mousePosition: [number, number];
-    _state: EngineState;
     logCursorPosition: number;
 
     constructor(public player: Actor) {
-        this._state = EngineState.Game;
+        this.inputHandler = new GameInputHandler();
         this.logCursorPosition = 0;
         this.display = new ROT.Display({
             width: Engine.WIDTH,
@@ -81,14 +82,6 @@ export class Engine {
 
         this.gameMap.updateFov(this.player);
     }
-    public get state() {
-        return this._state;
-    }
-
-    public set state(value) {
-        this._state = value;
-        this.logCursorPosition = this.messageLog.messages.length - 1;
-    }
 
     handleEnemyTurns() {
         this.gameMap.actors.forEach((e) => {
@@ -101,59 +94,21 @@ export class Engine {
     }
 
     update(event: KeyboardEvent) {
-        if (this.state === EngineState.Game) {
-            this.processGameLoop(event);
-        } else if (this.state === EngineState.Log) {
-            this.processLogLoop(event);
-        } else if (
-            this.state === EngineState.UseInventory ||
-            this.state === EngineState.DropInventory
-        ) {
-            this.processInventoryLoop(event);
-        }
-
-        this.render();
-    }
-
-    processGameLoop(event: KeyboardEvent) {
-        if (this.player.fighter.hp > 0) {
-            const action = handleGameInput(event);
-
-            if (action) { 
-                try {
-                    action.perform(this.player);
-                    if (this.state === EngineState.Game) {
-                        this.handleEnemyTurns();
-                    }
-                } catch { }
+        const action = this.inputHandler.handleKeyboardInput(event);
+        if (action instanceof Action) {
+            try {
+                action.perform(this.player);
+                this.handleEnemyTurns();
+                this.gameMap.updateFov(this.player);
+            } catch (error) {
+                if (error instanceof ImpossibleException) {
+                    this.messageLog.addMessage(error.message, Colors.Impossible);
+                }
             }
         }
 
-        this.gameMap.updateFov(this.player);
-    }
-    processInventoryLoop(event: KeyboardEvent) {
-        const action = handleInventoryInput(event);
-        action?.perform(this.player);
-    }
-
-    processLogLoop(event: KeyboardEvent) {
-        const scrollAmount = handleLogInput(event);
-        if (scrollAmount < 0 && this.logCursorPosition === 0) {
-            this.logCursorPosition = this.messageLog.messages.length - 1;
-        } else if (
-            scrollAmount > 0 &&
-            this.logCursorPosition === this.messageLog.messages.length - 1
-        ) {
-            this.logCursorPosition = 0;
-        } else {
-            this.logCursorPosition = Math.max(
-                0,
-                Math.min(
-                    this.logCursorPosition + scrollAmount,
-                    this.messageLog.messages.length - 1,
-                ),
-            );
-        }
+        this.inputHandler = this.inputHandler.nextHandler;
+        this.render();
     }
 
     render() { //w:73 h:34
@@ -166,26 +121,31 @@ export class Engine {
             this.player.fighter.maxHp,
             11,
         );
-        this.messageLog.render(this.display, 0, 31, 50, 3);
+        this.messageLog.render(this.display, 0, 30, 32, 4);
 
         renderNamesAtLocation();
 
-        if (this.state === EngineState.Log) {
+        if (this.inputHandler.inputState === InputState.Log) {
             renderFrameWithTitle(0, 0, 73, 34, 'Log');
-            this.messageLog.renderMessages(
+            this.messageLog.render(
                 this.display,
                 1,
                 1,
                 71,
                 32,
-                this.messageLog.messages.slice(0, this.logCursorPosition + 1),
             );
         }
-        if (this.state === EngineState.UseInventory) {
+        if (this.inputHandler.inputState === InputState.UseInventory) {
             this.renderInventory('Select an item to use');
         }
-        if (this.state === EngineState.DropInventory) {
+        if (this.inputHandler.inputState === InputState.DropInventory) {
             this.renderInventory('Select an item to drop');
+        }
+        if (this.inputHandler.inputState === InputState.Target) {
+            const [x, y] = this.mousePosition;
+            const data = this.display._data[`${x},${y}`];
+            const char = data ? data[2] || ' ' : ' ';
+            this.display.drawOver(x, y, char[4], '#000', '#fff');
         }
     }
 
@@ -207,11 +167,4 @@ export class Engine {
             this.display.drawText(x + 1, y + 1, '(Empty)');
         }
     }
-}
-export enum EngineState {
-    Game,
-    Dead,
-    Log,
-    UseInventory,
-    DropInventory,
 }

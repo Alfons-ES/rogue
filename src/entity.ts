@@ -1,7 +1,7 @@
 ﻿import { BaseAI, HostileEnemy } from './components/ai';
 import { Fighter } from './components/fighter';
 import { GameMap } from './game-map';
-import { Consumable, HealingConsumable } from './components/consumable';
+import { Consumable, HealingConsumable, LightningConsumable, ConfusionConsumable } from './components/consumable';
 import { FLOOR_TILE } from './tile-types';
 import { Inventory } from './components/inventory';
 import { BaseComponent } from './components/base-component';
@@ -88,6 +88,10 @@ export class Actor extends Entity {
     public get isAlive(): boolean {
         return !!this.ai || window.engine.player === this;
     }
+
+    distance(x: number, y: number) {
+        return Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
+    }
 }
 
 export function spawnPlayer(
@@ -149,8 +153,34 @@ export function spawnHealthPotion(
         '🩸',
         '#7F00FF',
         FLOOR_TILE.light.bg,
-        'Health Potion',
+        '♡Health Potion',
         new HealingConsumable(4),
+        gameMap,
+    );
+}
+
+export function spawnLightningScroll(gameMap: GameMap, x: number, y: number) {
+    return new Item(
+        x,
+        y,
+        '📜',
+        '#FFFF00',
+        FLOOR_TILE.light.bg,
+        'ϟScroll of lightning',
+        new LightningConsumable(20, 12),
+        gameMap,
+    );
+}
+
+export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
+    return new Item(
+        x,
+        y,
+        '📜',
+        '#cf3fff',
+        FLOOR_TILE.light.bg,
+        '⭑Confusion Scroll',
+        new ConfusionConsumable(10),
         gameMap,
     );
 }
