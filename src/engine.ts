@@ -41,8 +41,8 @@ export class Engine {
             width: Engine.WIDTH,
             height: Engine.HEIGHT,
             forceSquareRatio: true,
-            fontSize: 32,
-            spacing: 0.9,
+            fontSize: 34,
+            spacing: 0.85,
             fontFamily: 'Libertinus Sans'
         });
         this.mousePosition = [0, 0];
@@ -166,7 +166,7 @@ export class Engine {
             this.player.fighter.maxHp,
             11,
         );
-        this.messageLog.render(this.display, 43, 0, 31, 5);
+        this.messageLog.render(this.display, 0, 31, 50, 3);
 
         renderNamesAtLocation();
 
@@ -193,7 +193,7 @@ export class Engine {
         const itemCount = this.player.inventory.items.length;
         const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
         const width = title.length + 4;
-        const x = this.player.x <= 30 ? 40 : 0;
+        const x = 43;
         const y = 0;
 
         renderFrameWithTitle(x, y, width, height, title);
