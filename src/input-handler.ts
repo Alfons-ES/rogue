@@ -50,11 +50,15 @@ export abstract class BaseInputHandler {
     }
 
     abstract handleKeyboardInput(event: KeyboardEvent): Action | null;
+    abstract handleMouseInput(event: MouseEvent): Action | null;
 }
 
 export class GameInputHandler extends BaseInputHandler {
     constructor() {
         super();
+    }
+    handleMouseInput(_event: MouseEvent): Action | null {
+        return null;
     }
 
     handleKeyboardInput(event: KeyboardEvent): Action | null {
@@ -89,6 +93,10 @@ export class GameInputHandler extends BaseInputHandler {
 export class LogInputHandler extends BaseInputHandler {
     constructor() {
         super(InputState.Log);
+    }
+
+    handleMouseInput(_event: MouseEvent): Action | null {
+        return null;
     }
 
     handleKeyboardInput(event: KeyboardEvent): Action | null {
@@ -137,6 +145,10 @@ export class InventoryInputHandler extends BaseInputHandler {
         super(inputState);
     }
 
+    handleMouseInput(_event: MouseEvent): Action | null {
+        return null;
+    }
+
     handleKeyboardInput(event: KeyboardEvent): Action | null {
         if (event.key.length === 1) {
             const ordinal = event.key.charCodeAt(0);
@@ -181,18 +193,40 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
             const [dx, dy] = moveAmount;
             x += dx * modifier;
             y += dy * modifier;
-            x = Math.max(0, Math.min(x, Engine.MAP_WIDTH - 1));
-            y = Math.max(0, Math.min(y, Engine.MAP_HEIGHT - 1));
-            window.engine.mousePosition = [x, y];
+
+            const clampedX = Math.max(0, Math.min(x, window.engine.display.getOptions().width! - 1));
+            const clampedY = Math.max(0, Math.min(y, window.engine.display.getOptions().height! - 1));
+            window.engine.mousePosition = [clampedX, clampedY];
             return null;
         } else if (event.key === 'Enter') {
-            let [x, y] = window.engine.mousePosition;
+            const [mouseX, mouseY] = window.engine.mousePosition;
+
+            // Adjust for camera offset!
+            const x = mouseX + window.engine.gameMap.cameraX;
+            const y = mouseY + window.engine.gameMap.cameraY;
+
             return this.onIndexSelected(x, y);
         }
 
         this.nextHandler = new GameInputHandler();
         return null;
     }
+
+    handleMouseInput(event: MouseEvent): Action | null {
+        // Only respond to left click (button === 0)
+        if (event.button === 0) {
+            const [mouseX, mouseY] = window.engine.mousePosition;
+
+            // Adjust for camera offset to get real map coordinates
+            const x = mouseX + window.engine.gameMap.cameraX;
+            const y = mouseY + window.engine.gameMap.cameraY;
+
+            return this.onIndexSelected(x, y);
+        }
+        this.nextHandler = new GameInputHandler();
+        return null;
+    }
+
 
     abstract onIndexSelected(x: number, y: number): Action | null;
 }
@@ -206,7 +240,6 @@ export class LookHandler extends SelectIndexHandler {
         this.nextHandler = new GameInputHandler();
         return null;
     }
-
 }
 type ActionCallback = (x: number, y: number) => Action | null;
 

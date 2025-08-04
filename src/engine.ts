@@ -75,6 +75,11 @@ export class Engine {
             this.update(event);
         });
 
+        window.addEventListener('mousedown', (event) => {
+            this.update(event);
+        });
+        window.addEventListener('contextmenu', (event) => event.preventDefault());
+
         window.addEventListener('mousemove', (event) => {
             this.mousePosition = this.display.eventToPosition(event);
             this.render();
@@ -93,8 +98,15 @@ export class Engine {
         });
     }
 
-    update(event: KeyboardEvent) {
-        const action = this.inputHandler.handleKeyboardInput(event);
+    update(event: KeyboardEvent | MouseEvent) {
+        let action: Action | null = null;
+
+        if (event instanceof KeyboardEvent) {
+            action = this.inputHandler.handleKeyboardInput(event);
+        } else if (event instanceof MouseEvent) {
+            action = this.inputHandler.handleMouseInput(event);
+        }
+
         if (action instanceof Action) {
             try {
                 action.perform(this.player);
