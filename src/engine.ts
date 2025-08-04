@@ -72,6 +72,7 @@ export class Engine {
     this.gameMap.cameraY = this.player.y - Math.floor(this.display.getOptions().height! / 2);
 
         window.addEventListener('keydown', (event) => {
+            event.preventDefault();
             this.update(event);
         });
 

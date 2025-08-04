@@ -76,7 +76,7 @@ export class GameInputHandler extends BaseInputHandler {
             if (event.key === 'g') {
                 return new PickupAction();
             }
-            if (event.key === 'i') {
+            if (event.key === 'i' || event.key === 'Tab') {
                 this.nextHandler = new InventoryInputHandler(InputState.UseInventory);
             }
             if (event.key === 'k') {
