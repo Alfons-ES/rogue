@@ -8,6 +8,7 @@
 } from './actions';
 import { Colors } from './colors';
 import { Engine } from './engine';
+import { Display } from 'rot-js';
 
 
 interface LogMap {
@@ -44,6 +45,7 @@ export enum InputState {
 }
 
 export abstract class BaseInputHandler {
+    onRender(_display: Display) { }
     nextHandler: BaseInputHandler;
     protected constructor(public inputState: InputState = InputState.Game) {
         this.nextHandler = this;
@@ -201,7 +203,7 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
         } else if (event.key === 'Enter') {
             const [mouseX, mouseY] = window.engine.mousePosition;
 
-            // Adjust for camera offset!
+            
             const x = mouseX + window.engine.gameMap.cameraX;
             const y = mouseY + window.engine.gameMap.cameraY;
 
@@ -246,6 +248,38 @@ type ActionCallback = (x: number, y: number) => Action | null;
 export class SingleRangedAttackHandler extends SelectIndexHandler {
     constructor(public callback: ActionCallback) {
         super();
+    }
+
+    onIndexSelected(x: number, y: number): Action | null {
+        this.nextHandler = new GameInputHandler();
+        return this.callback(x, y);
+    }
+}
+
+export class AreaRangedAttackHandler extends SelectIndexHandler {
+    constructor(public radius: number, public callback: ActionCallback) {
+        super();
+    }
+
+    onRender(display: Display) {
+        const centerX = window.engine.mousePosition[0];
+        const centerY = window.engine.mousePosition[1];
+
+        const diameter = this.radius * 2 + 1;
+
+        for (let dx = -this.radius; dx <= this.radius; dx++) {
+            for (let dy = -this.radius; dy <= this.radius; dy++) {
+                const x = centerX + dx;
+                const y = centerY + dy;
+
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance <= this.radius) {
+                    const data = display._data[`${x},${y}`];
+                    const char = data ? data[2] || ' ' : ' ';
+                    display.drawOver(x, y, char[5], '#d60000', '#f00');
+                }
+            }
+        }
     }
 
     onIndexSelected(x: number, y: number): Action | null {

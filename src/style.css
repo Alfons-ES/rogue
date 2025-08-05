@@ -3,3 +3,6 @@ body {
     padding: 0px;
     text-shadow: 1px 1px black;
 }
+canvas {
+    image-rendering: pixelated;
+}

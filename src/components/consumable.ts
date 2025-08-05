@@ -2,9 +2,10 @@ import { Actor, Entity, Item } from '../entity';
 import { Action, ItemAction } from '../actions.ts';
 import { Colors } from '../colors';
 import { Inventory } from './inventory';
-import { SingleRangedAttackHandler } from '../input-handler';
+import { SingleRangedAttackHandler, AreaRangedAttackHandler} from '../input-handler';
 import { ConfusedEnemy } from './ai';
 import { ImpossibleException } from '../exceptions'
+
 
 export abstract class Consumable {
     protected constructor(public parent: Item | null) { }
@@ -130,6 +131,66 @@ export class ConfusionConsumable extends Consumable {
             Colors.StatusEffectApplied,
         );
         target.ai = new ConfusedEnemy(target.ai, this.numberOfTurns);
+        this.consume();
+    }
+}
+
+export class MeteorDamageConsumable extends Consumable {
+    constructor(
+        public damage: number,
+        public radius: number,
+        parent: Item | null = null,
+    ) {
+        super(parent);
+    }
+
+    getAction(): Action | null {
+        window.engine.messageLog.addMessage(
+            'Select a target location.',
+            Colors.NeedsTarget,
+        );
+
+        // Trigger area targeting
+        window.engine.inputHandler = new AreaRangedAttackHandler(
+            this.radius,
+            (x, y) => new ItemAction(this.parent, [x, y]),
+        );
+
+        return null;
+    }
+
+    activate(action: ItemAction, _entity: Entity) {
+        const targetPosition = action.targetPosition;
+
+        if (!targetPosition) {
+            throw new ImpossibleException('You must select a target.');
+        }
+
+        const [x, y] = targetPosition;
+
+        if (!window.engine.gameMap.tiles[y][x].visible) {
+            throw new ImpossibleException(
+                'You cannot target an area that you cannot see.',
+            );
+        }
+
+        let targetsHit = false;
+
+        for (const actor of window.engine.gameMap.actors) {
+            if (actor.distance(x, y) <= this.radius) {
+                window.engine.messageLog.addMessage(
+                    `${actor.name} got crushed by a meteor, taking ${this.damage} dmg!`,
+                    Colors.Attack
+                );
+                actor.fighter.takeDamage(this.damage);
+                targetsHit = true;
+            }
+        }
+
+        if (!targetsHit) {
+            throw new ImpossibleException('There are no targets in the radius.');
+        }
+
         this.consume();
     }
 }

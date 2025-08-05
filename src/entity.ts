@@ -1,7 +1,7 @@
 ﻿import { BaseAI, HostileEnemy } from './components/ai';
 import { Fighter } from './components/fighter';
 import { GameMap } from './game-map';
-import { Consumable, HealingConsumable, LightningConsumable, ConfusionConsumable } from './components/consumable';
+import { Consumable, HealingConsumable, LightningConsumable, ConfusionConsumable, MeteorDamageConsumable } from './components/consumable';
 import { FLOOR_TILE } from './tile-types';
 import { Inventory } from './components/inventory';
 import { BaseComponent } from './components/base-component';
@@ -179,8 +179,20 @@ export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
         '📜',
         '#cf3fff',
         FLOOR_TILE.light.bg,
-        '⭑Confusion Scroll',
+        '⭑Scroll of Confusion',
         new ConfusionConsumable(10),
+        gameMap,
+    );
+}
+export function spawnMeteorScroll(gameMap: GameMap, x: number, y: number) {
+    return new Item(
+        x,
+        y,
+        '📜',
+        '#ff0000',
+        FLOOR_TILE.light.bg,
+        'Meteor Scroll',
+        new MeteorDamageConsumable(12, 4),
         gameMap,
     );
 }

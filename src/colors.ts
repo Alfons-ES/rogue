@@ -15,4 +15,5 @@ export enum Colors {
     Impossible = '#808080',
     Error = '#ff4040',
     HealthRecovered = '#00ff00',
+    Attack = 'orangered',
 }

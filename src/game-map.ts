@@ -66,7 +66,7 @@ export class GameMap {
         } //reset visibility of all tiles, not leaving trail.
 
         const fov = new ROT.FOV.RecursiveShadowcasting(this.lightPasses.bind(this));
-        fov.compute(player.x, player.y, 12, (x, y, _r, visibility) => {
+        fov.compute(player.x, player.y, 14, (x, y, _r, visibility) => {
             if (visibility === 1) {
                 this.tiles[y][x].visible = true;
                 this.tiles[y][x].seen = true;

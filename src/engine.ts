@@ -18,15 +18,15 @@ import { MessageLog } from './message-log';
 import { Colors } from './colors';
 import { ImpossibleException } from './exceptions';
 export class Engine {
-    public static readonly WIDTH = 73;
-    public static readonly HEIGHT = 34;
+    public static readonly WIDTH = 69;
+    public static readonly HEIGHT = 30;
     public static readonly MAP_WIDTH = 200;
     public static readonly MAP_HEIGHT = 200;
     public static readonly MIN_ROOM_SIZE = 6;
-    public static readonly MAX_ROOM_SIZE = 11;
+    public static readonly MAX_ROOM_SIZE = 14;
     public static readonly MAX_ROOMS = 50;
-    public static readonly MAX_MONSTERS_PER_ROOM = 2;
-    public static readonly MAX_ITEMS_PER_ROOM = 40;
+    public static readonly MAX_MONSTERS_PER_ROOM = 5;
+    public static readonly MAX_ITEMS_PER_ROOM = 2;
 
     inputHandler: BaseInputHandler
     display: ROT.Display;
@@ -42,8 +42,8 @@ export class Engine {
             width: Engine.WIDTH,
             height: Engine.HEIGHT,
             forceSquareRatio: true,
-            fontSize: 34,
-            spacing: 0.85,
+            fontSize: 24,
+            spacing: 0.875,
             fontFamily: 'Libertinus Sans'
         });
         this.mousePosition = [0, 0];
@@ -124,7 +124,7 @@ export class Engine {
         this.render();
     }
 
-    render() { //w:73 h:34
+    render() { //w:69 h:30
         this.display.clear();
         this.gameMap.render();
 
@@ -134,18 +134,18 @@ export class Engine {
             this.player.fighter.maxHp,
             11,
         );
-        this.messageLog.render(this.display, 0, 30, 32, 4);
+        this.messageLog.render(this.display, 0, 26, 32, 4);
 
         renderNamesAtLocation();
 
         if (this.inputHandler.inputState === InputState.Log) {
-            renderFrameWithTitle(0, 0, 73, 34, 'Log');
+            renderFrameWithTitle(0, 0, 67, 30, 'Log');
             this.messageLog.render(
                 this.display,
                 1,
                 1,
-                71,
-                32,
+                66,
+                28,
             );
         }
         if (this.inputHandler.inputState === InputState.UseInventory) {
@@ -158,8 +158,10 @@ export class Engine {
             const [x, y] = this.mousePosition;
             const data = this.display._data[`${x},${y}`];
             const char = data ? data[2] || ' ' : ' ';
-            this.display.drawOver(x, y, char[4], '#000', '#fff');
+            this.display.drawOver(x, y, char[4], '#000', 'white');
         }
+        this.inputHandler.onRender(this.display);
+
     }
 
     renderInventory(title: string) {
