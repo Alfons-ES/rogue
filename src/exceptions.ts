@@ -1,3 +1,3 @@
 export class ImpossibleException {
-    constructor(public message: string) { }
+  constructor(public message: string) {}
 }
