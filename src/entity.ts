@@ -10,6 +10,7 @@ import {
   LightningConsumable,
 } from './components/consumable';
 import { BaseComponent } from './components/base-component';
+import { Level } from './components/level'; 
 
 export enum RenderOrder {
   Corpse,
@@ -63,18 +64,19 @@ export class Entity {
 }
 
 export class Actor extends Entity {
-  constructor(
-    public x: number,
-    public y: number,
-    public char: string,
-    public fg: string = '#fff',
-    public bg: string = '#000',
-    public name: string = '<Unnamed>',
-    public ai: BaseAI | null,
-    public fighter: Fighter,
-    public inventory: Inventory,
-    public parent: GameMap | null = null,
-  ) {
+    constructor(
+        public x: number,
+        public y: number,
+        public char: string,
+        public fg: string = '#fff',
+        public bg: string = '#000',
+        public name: string = '<Unnamed>',
+        public ai: BaseAI | null,
+        public fighter: Fighter,
+        public inventory: Inventory,
+        public level: Level,
+        public parent: GameMap | null = null,
+    ) {
     super(x, y, char, fg, bg, name, true, RenderOrder.Actor, parent);
     this.fighter.parent = this;
     this.inventory.parent = this;
@@ -102,52 +104,56 @@ export class Item extends Entity {
 }
 
 export function spawnPlayer(
-  x: number,
-  y: number,
-  gameMap: GameMap | null = null,
+    x: number,
+    y: number,
+    gameMap: GameMap | null = null,
 ): Actor {
-  return new Actor(
-    x,
-    y,
-    '@',
-    '#fff',
-    '#000',
-    'Player',
-    null,
-    new Fighter(30, 2, 5),
-    new Inventory(26),
-    gameMap,
-  );
+    const player = new Actor(
+        x,
+        y,
+        '@',
+        '#fff',
+        '#000',
+        'Player',
+        null,
+        new Fighter(30, 2, 5),
+        new Inventory(26),
+        new Level(20),
+        gameMap,
+    );
+    player.level.parent = player;
+    return player;
 }
 
 export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
-  return new Actor(
-    x,
-    y,
-    'o',
-    '#3f7f3f',
-    '#000',
-    'Orc',
-    new HostileEnemy(),
-    new Fighter(10, 0, 3),
-    new Inventory(0),
-    gameMap,
-  );
+    return new Actor(
+        x,
+        y,
+        'o',
+        '#3f7f3f',
+        '#000',
+        'Orc',
+        new HostileEnemy(),
+        new Fighter(10, 0, 3),
+        new Inventory(0),
+        new Level(0, 35),
+        gameMap,
+    );
 }
-
 export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
-  return new Actor(
-    x,
-    y,
-    'T',
-    '#007f00',
-    '#000',
-    'Troll',
-    new HostileEnemy(),
-    new Fighter(16, 1, 4),
-    new Inventory(0),
-    gameMap,
-  );
+    return new Actor(
+        x,
+        y,
+        'T',
+        '#007f00',
+        '#000',
+        'Troll',
+        new HostileEnemy(),
+        new Fighter(16, 1, 4),
+        new Inventory(0),
+        new Level(0, 100),
+        gameMap,
+    );
 }
 
 export function spawnHealthPotion(
@@ -217,3 +223,16 @@ export function spawnFireballScroll(
     gameMap,
   );
 }
+
+type SPAWNMAP = {
+    [key: string]: (gameMap: GameMap, x: number, y: number) => Entity;
+};
+
+export const spawnMap: SPAWNMAP = {
+    spawnOrc,
+    spawnTroll,
+    spawnHealthPotion,
+    spawnConfusionScroll,
+    spawnLightningScroll,
+    spawnFireballScroll,
+};
