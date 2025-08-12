@@ -8,8 +8,8 @@ export class Fighter extends BaseComponent {
 
     constructor(
         public maxHp: number,
-        public defense: number,
-        public power: number,
+        public baseDefense: number,
+        public basePower: number,
     ) {
         super();
         this._hp = maxHp;
@@ -65,5 +65,27 @@ export class Fighter extends BaseComponent {
 
     takeDamage(amount: number) {
         this.hp -= amount;
+    }
+
+    public get defenseBonus(): number {
+        if (this.parent?.equipment) {
+            return this.parent.equipment.defenseBonus;
+        }
+        return 0;
+    }
+
+    public get powerBonus(): number {
+        if (this.parent?.equipment) {
+            return this.parent.equipment.powerBonus;
+        }
+        return 0;
+    }
+
+    public get defense(): number {
+        return this.baseDefense + this.defenseBonus;
+    }
+
+    public get power(): number {
+        return this.basePower + this.powerBonus;
     }
 }

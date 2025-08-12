@@ -12,6 +12,7 @@ import { Colors } from './colors';
 import { Engine } from './engine';
 import { Display } from 'rot-js';
 import { renderFrameWithTitle } from './render-functions';
+import { EquipAction } from './actions';
 
 interface LogMap {
   [key: string]: number;
@@ -178,29 +179,59 @@ export class InventoryInputHandler extends BaseInputHandler {
     super(inputState);
   }
 
-  handleKeyboardInput(event: KeyboardEvent): Action | null {
-    if (event.key.length === 1) {
-      const ordinal = event.key.charCodeAt(0);
-      const index = ordinal - 'a'.charCodeAt(0);
+    onRender(display: Display) {
+        const title =
+            this.inputState === InputState.UseInventory
+                ? 'Select an item to use'
+                : 'Select an item to drop';
+        const itemCount = window.engine.player.inventory.items.length;
+        const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
+        const width = title.length + 4;
+        const x = window.engine.player.x <= 30 ? 40 : 0;
+        const y = 0;
 
-      if (index >= 0 && index <= 26) {
-        const item = window.engine.player.inventory.items[index];
-        if (item) {
-          this.nextHandler = new GameInputHandler();
-          if (this.inputState === InputState.UseInventory) {
-            return item.consumable.getAction();
-          } else if (this.inputState === InputState.DropInventory) {
-            return new DropItem(item);
-          }
+        renderFrameWithTitle(x, y, width, height, title);
+
+        if (itemCount > 0) {
+            window.engine.player.inventory.items.forEach((i, index) => {
+                const key = String.fromCharCode('a'.charCodeAt(0) + index);
+                const isEquipped = window.engine.player.equipment.itemIsEquipped(i);
+                let itemString = `(${key}) ${i.name}`;
+                itemString = isEquipped ? `${itemString} (E)` : itemString;
+                display.drawText(x + 1, y + index + 1, itemString);
+            });
         } else {
-          window.messageLog.addMessage('Invalid entry.', Colors.Invalid);
-          return null;
+            display.drawText(x + 1, y + 1, '(Empty)');
         }
-      }
     }
-    this.nextHandler = new GameInputHandler();
-    return null;
-  }
+
+    handleKeyboardInput(event: KeyboardEvent): Action | null {
+        if (event.key.length === 1) {
+            const ordinal = event.key.charCodeAt(0);
+            const index = ordinal - 'a'.charCodeAt(0);
+            if (index >= 0 && index <= 26) {
+                const item = window.engine.player.inventory.items[index];
+                if (item) {
+                    this.nextHandler = new GameInputHandler();
+                    if (this.inputState === InputState.UseInventory) {
+                        if (item.consumable) {
+                            return item.consumable.getAction();
+                        } else if (item.equippable) {
+                            return new EquipAction(item);
+                        }
+                        return null;
+                    } else if (this.inputState === InputState.DropInventory) {
+                        return new DropItem(item);
+                    }
+                } else {
+                    window.messageLog.addMessage('Invalid entry.', Colors.Invalid);
+                    return null;
+                }
+            }
+        }
+        this.nextHandler = new GameInputHandler();
+        return null;
+    }
 }
 
 export abstract class SelectIndexHandler extends BaseInputHandler {

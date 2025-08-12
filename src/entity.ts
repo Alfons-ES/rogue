@@ -9,6 +9,14 @@ import {
   HealingConsumable,
   LightningConsumable,
 } from './components/consumable';
+import {
+    ChainMail,
+    Dagger,
+    Equippable,
+    LeatherArmor,
+    Sword,
+} from './components/equippable';
+import { Equipment } from './components/equipment';
 import { BaseComponent } from './components/base-component';
 import { Level } from './components/level'; 
 
@@ -72,35 +80,44 @@ export class Actor extends Entity {
         public bg: string = '#000',
         public name: string = '<Unnamed>',
         public ai: BaseAI | null,
+        public equipment: Equipment,
         public fighter: Fighter,
         public inventory: Inventory,
         public level: Level,
         public parent: GameMap | null = null,
     ) {
-    super(x, y, char, fg, bg, name, true, RenderOrder.Actor, parent);
-    this.fighter.parent = this;
-    this.inventory.parent = this;
-  }
+        super(x, y, char, fg, bg, name, true, RenderOrder.Actor, parent);
+        this.fighter.parent = this;
+        this.equipment.parent = this;
+        this.inventory.parent = this;
+    }
 
-  public get isAlive(): boolean {
-    return !!this.ai || window.engine.player === this;
-  }
+    public get isAlive(): boolean {
+        return !!this.ai || window.engine.player === this;
+    }
 }
 
 export class Item extends Entity {
-  constructor(
-    public x: number = 0,
-    public y: number = 0,
-    public char: string = '?',
-    public fg: string = '#fff',
-    public bg: string = '#000',
-    public name: string = '<Unnamed>',
-    public consumable: Consumable,
-    public parent: GameMap | BaseComponent | null = null,
-  ) {
-    super(x, y, char, fg, bg, name, false, RenderOrder.Item, parent);
-    this.consumable.parent = this;
-  }
+    constructor(
+        public x: number = 0,
+        public y: number = 0,
+        public char: string = '?',
+        public fg: string = '#fff',
+        public bg: string = '#000',
+        public name: string = '<Unnamed>',
+        public consumable: Consumable | null = null,
+        public equippable: Equippable | null = null,
+        public parent: GameMap | BaseComponent | null = null,
+    ) {
+        super(x, y, char, fg, bg, name, false, RenderOrder.Item, parent);
+        if (this.consumable) {
+            this.consumable.parent = this;
+        }
+
+        if (this.equippable) {
+            this.equippable.parent = this;
+        }
+    }
 }
 
 export function spawnPlayer(
@@ -116,15 +133,15 @@ export function spawnPlayer(
         '#000',
         'Player',
         null,
-        new Fighter(30, 2, 5),
+        new Equipment(),
+        new Fighter(30, 1, 2),
         new Inventory(26),
-        new Level(20),
+        new Level(200),
         gameMap,
     );
     player.level.parent = player;
     return player;
 }
-
 export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
     return new Actor(
         x,
@@ -134,12 +151,14 @@ export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
         '#000',
         'Orc',
         new HostileEnemy(),
+        new Equipment(),
         new Fighter(10, 0, 3),
         new Inventory(0),
         new Level(0, 35),
         gameMap,
     );
 }
+
 export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
     return new Actor(
         x,
@@ -149,6 +168,7 @@ export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
         '#000',
         'Troll',
         new HostileEnemy(),
+        new Equipment(),
         new Fighter(16, 1, 4),
         new Inventory(0),
         new Level(0, 100),
@@ -223,6 +243,65 @@ export function spawnFireballScroll(
     gameMap,
   );
 }
+export function spawnDagger(gameMap: GameMap, x: number, y: number): Item {
+    return new Item(
+        x,
+        y,
+        '/',
+        '#00bfff',
+        '#000',
+        'Dagger',
+        null,
+        new Dagger(),
+        gameMap,
+    );
+}
+
+export function spawnSword(gameMap: GameMap, x: number, y: number): Item {
+    return new Item(
+        x,
+        y,
+        '/',
+        '#00bfff',
+        '#000',
+        'Sword',
+        null,
+        new Sword(),
+        gameMap,
+    );
+}
+
+export function spawnLeatherArmor(
+    gameMap: GameMap,
+    x: number,
+    y: number,
+): Item {
+    return new Item(
+        x,
+        y,
+        '[',
+        '#8b4513',
+        '#000',
+        'Leather Armor',
+        null,
+        new LeatherArmor(),
+        gameMap,
+    );
+}
+
+export function spawnChainMail(gameMap: GameMap, x: number, y: number): Item {
+    return new Item(
+        x,
+        y,
+        '[',
+        '#8b4513',
+        '#000',
+        'Chain Mail',
+        null,
+        new ChainMail(),
+        gameMap,
+    );
+}
 
 type SPAWNMAP = {
     [key: string]: (gameMap: GameMap, x: number, y: number) => Entity;
@@ -235,4 +314,8 @@ export const spawnMap: SPAWNMAP = {
     spawnConfusionScroll,
     spawnLightningScroll,
     spawnFireballScroll,
-};
+    spawnDagger,
+    spawnSword,
+    spawnLeatherArmor,
+    spawnChainMail,
+};  

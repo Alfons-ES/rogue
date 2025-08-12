@@ -5,12 +5,16 @@ import { generateDungeon } from '../procgen';
 import {
     Actor,
     Item,
+    spawnChainMail,
     spawnConfusionScroll,
+    spawnDagger,
     spawnFireballScroll,
     spawnHealthPotion,
+    spawnLeatherArmor,
     spawnLightningScroll,
     spawnOrc,
     spawnPlayer,
+    spawnSword,
     spawnTroll,
 } from '../entity';
 import {
@@ -28,6 +32,7 @@ import {
 } from '../render-functions';
 import { ConfusedEnemy, HostileEnemy } from '../components/ai';
 import { Tile } from '../tile-types';
+
 
 export class GameScreen extends BaseScreen {
     public static readonly MAP_WIDTH = 80;
@@ -59,6 +64,17 @@ export class GameScreen extends BaseScreen {
             this.currentFloor = floor;
         } else {
             this.generateFloor();
+            const dagger = spawnDagger(this.gameMap, 0, 0);
+            dagger.parent = this.player.inventory;
+            this.player.inventory.items.push(dagger);
+            this.player.equipment.toggleEquip(dagger, false);
+            this.gameMap.removeEntity(dagger);
+
+            const leatherArmor = spawnLeatherArmor(this.gameMap, 0, 0);
+            leatherArmor.parent = this.player.inventory;
+            this.player.inventory.items.push(leatherArmor);
+            this.player.equipment.toggleEquip(leatherArmor, false);
+            this.gameMap.removeEntity(leatherArmor);
         }
 
         this.inputHandler = new GameInputHandler();
@@ -150,36 +166,11 @@ export class GameScreen extends BaseScreen {
                 ),
             );
         }
-        if (this.inputHandler.inputState === InputState.UseInventory) {
-            this.renderInventory('Select an item to use');
-        }
-        if (this.inputHandler.inputState === InputState.DropInventory) {
-            this.renderInventory('Select an item to drop');
-        }
         if (this.inputHandler.inputState === InputState.Target) {
             const [x, y] = this.inputHandler.mousePosition;
             this.display.drawOver(x, y, null, '#000', '#fff');
         }
         this.inputHandler.onRender(this.display);
-    }
-
-    renderInventory(title: string) {
-        const itemCount = this.player.inventory.items.length;
-        const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
-        const width = title.length + 4;
-        const x = this.player.x <= 30 ? 40 : 0;
-        const y = 0;
-
-        renderFrameWithTitle(x, y, width, height, title);
-
-        if (itemCount > 0) {
-            this.player.inventory.items.forEach((i, index) => {
-                const key = String.fromCharCode('a'.charCodeAt(0) + index);
-                this.display.drawText(x + 1, y + index + 1, `(${key}) ${i.name}`);
-            });
-        } else {
-            this.display.drawText(x + 1, y + 1, '(Empty)');
-        }
     }
 
     private saveGame() {
@@ -226,6 +217,22 @@ export class GameScreen extends BaseScreen {
                     item = spawnFireballScroll(map, 0, 0);
                     break;
                 }
+                case 'Dagger': {
+                    item = spawnDagger(map, 0, 0);
+                    break;
+                }
+                case 'Sword': {
+                    item = spawnSword(map, 0, 0);
+                    break;
+                }
+                case 'Leather Armor': {
+                    item = spawnLeatherArmor(map, 0, 0);
+                    break;
+                }
+                case 'Chain Mail': {
+                    item = spawnChainMail(map, 0, 0);
+                    break;
+                }
             }
 
             if (item) {
@@ -256,6 +263,14 @@ export class GameScreen extends BaseScreen {
                 spawnConfusionScroll(map, e.x, e.y);
             } else if (e.name === 'Fireball Scroll') {
                 spawnFireballScroll(map, e.x, e.y);
+            } else if (e.name === 'Dagger') {
+                spawnDagger(map, e.x, e.y);
+            } else if (e.name === 'Sword') {
+                spawnSword(map, e.x, e.y);
+            } else if (e.name === 'Leather Armor') {
+                spawnLeatherArmor(map, e.x, e.y);
+            } else if (e.name === 'Chain Mail') {
+                spawnChainMail(map, e.x, e.y);
             }
         }
         return [map, player, parsedMap.currentFloor];
